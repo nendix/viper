@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
-    static final int SCREEN_WIDTH = 800;
+    static final int SCREEN_WIDTH = 1000;
     static final int SCREEN_HEIGHT = 800;
     static final int UNIT_SIZE = 25;
     static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
@@ -14,7 +14,9 @@ public class GamePanel extends JPanel implements ActionListener {
     final int[] X = new int[GAME_UNITS];
     final int[] Y = new int[GAME_UNITS];
     int bodyParts = 1;
-    int applesEaten;
+    int score;
+    int badApplesEaten;
+    int goldenApplesEaten;
     int appleX;
     int appleY;
     int badAppleX = -1; // Inizialmente non sul campo
@@ -27,6 +29,13 @@ public class GamePanel extends JPanel implements ActionListener {
     Timer badAppleTimer;
     Timer goldenAppleTimer;
     Random random;
+    int highScore = 0;
+    int totalApplesEaten = 0;
+    int totalBadApplesEaten = 0;
+    int totalGoldenApplesEaten = 0;
+    int totalGamesPlayed = 0;
+    int totalApples = 0;
+    boolean inMenu = true;
 
     GamePanel() {
         random = new Random();
@@ -34,12 +43,26 @@ public class GamePanel extends JPanel implements ActionListener {
         this.setBackground(new Color(28, 28, 28));
         this.setFocusable(true);
         this.addKeyListener(new MyKeyAdapter());
-        startGame();
+        showMenu();
+    }
+
+    public void showMenu() {
+        inMenu = true;
+        running = false;
+        repaint();
     }
 
     public void startGame() {
         newApple();
         running = true;
+        inMenu = false;
+        bodyParts = 1;
+        score = 0;
+        badApplesEaten = 0;
+        goldenApplesEaten = 0;
+        direction = 'R';
+        X[0] = 0;
+        Y[0] = 0;
         timer = new Timer(DELAY, this);
         timer.start();
 
@@ -71,6 +94,7 @@ public class GamePanel extends JPanel implements ActionListener {
         // Genera un intervallo casuale tra 45 e 60 secondi
         return random.nextInt(15000) + 45000;
     }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (running) {
@@ -86,7 +110,11 @@ public class GamePanel extends JPanel implements ActionListener {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        draw(g);
+        if (inMenu) {
+            drawMenu(g);
+        } else {
+            draw(g);
+        }
     }
 
     public void draw(Graphics g) {
@@ -106,18 +134,70 @@ public class GamePanel extends JPanel implements ActionListener {
                 g.setColor(new Color(255, 255, 41));
                 g.fillRect(goldenAppleX, goldenAppleY, UNIT_SIZE, UNIT_SIZE);
             }
+
             // Disegna il corpo del serpente
             for (int i = 0; i < bodyParts; i++) {
-                g.setColor(Color.white);
+                g.setColor(new Color(252, 252, 252));
                 g.fillRect(X[i], Y[i], UNIT_SIZE, UNIT_SIZE);
             }
+
             // Disegna il punteggio
             g.setColor(Color.lightGray);
-            g.setFont(new Font("Helvetica", Font.PLAIN, 20));
-            g.drawString("Score: " + applesEaten, 2, SCREEN_HEIGHT - 4);
+            g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.PLAIN, 30));
+            g.drawString("Score: " + score, 2, SCREEN_HEIGHT - 4);
         } else {
             gameOver(g);
         }
+    }
+
+    public void drawMenu(Graphics g) {
+
+        // Titolo del gioco
+        g.setColor(new Color(252, 252, 252));
+        g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.PLAIN, 232));
+        FontMetrics metrics0 = getFontMetrics(g.getFont());
+        g.drawString("VIPER", (SCREEN_WIDTH - metrics0.stringWidth("VIPER")) / 2, SCREEN_HEIGHT / 4);
+
+        // Record del punteggio
+        g.setColor(Color.lightGray);
+        g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.PLAIN, 56));
+        FontMetrics metrics1 = getFontMetrics(g.getFont());
+        g.drawString("High Score: " + highScore, (SCREEN_WIDTH - metrics1.stringWidth("High Score: " + highScore)) / 2, SCREEN_HEIGHT / 3);
+
+        // Legenda dei tasti
+        g.setColor(Color.lightGray);
+        g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.PLAIN, 36));
+        FontMetrics metrics2 = getFontMetrics(g.getFont());
+        g.drawString("KEYS",  SCREEN_WIDTH / 6, SCREEN_HEIGHT / 3 + 50);
+        g.drawString("W: Up",  SCREEN_WIDTH / 6 , SCREEN_HEIGHT / 3 + 80);
+        g.drawString("A: Left",  SCREEN_WIDTH / 6 , SCREEN_HEIGHT / 3 + 100);
+        g.drawString("S: Down",  SCREEN_WIDTH / 6 , SCREEN_HEIGHT / 3 + 120);
+        g.drawString("D: Right",  SCREEN_WIDTH / 6 , SCREEN_HEIGHT / 3 + 140);
+
+        // Legenda delle mele
+        g.drawString("FOODS",  (metrics2.stringWidth("Golden Apple: -3 Length, +1 Point") / 2) - metrics2.stringWidth("FOOD") / 2, SCREEN_HEIGHT / 2 + 100);
+        g.setColor(new Color(230, 41, 51));
+        g.drawString("Apple: +1 Point", (metrics2.stringWidth("Golden Apple: -3 Length, +1 Point") / 2) - (metrics2.stringWidth("Apple: +1 Point") / 2) , SCREEN_HEIGHT / 2 + 130);
+
+        g.setColor(new Color(132, 230, 41));
+        g.drawString("Bad Apple: +2 Length, -1 Point", (metrics2.stringWidth("Golden Apple: -3 Length, +1 Point") / 2) - (metrics2.stringWidth("Bad Apple: +2 Length, -1 Point") / 2), SCREEN_HEIGHT / 2 + 150);
+
+        g.setColor(new Color(255, 255, 41));
+        g.drawString("Golden Apple: -3 Length, +1 Point", SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 170);
+
+        // Statistiche
+        g.setColor(Color.lightGray);
+        FontMetrics metrics3 = getFontMetrics(g.getFont());
+        g.drawString("Total Games Played: " + totalGamesPlayed, SCREEN_WIDTH - metrics3.stringWidth("Total Games Played: "), SCREEN_HEIGHT / 2 + 50);
+        g.drawString("Total Apples Eaten: " + totalApplesEaten, SCREEN_WIDTH - metrics3.stringWidth("Total Apples Eaten: "), SCREEN_HEIGHT / 2 + 80);
+        g.drawString("Total Bad Apples Eaten: " + totalBadApplesEaten, SCREEN_WIDTH - metrics3.stringWidth("Total Bad Apples Eaten: "), SCREEN_HEIGHT / 2 + 110);
+        g.drawString("Total Golden Apples Eaten: " + totalGoldenApplesEaten, SCREEN_WIDTH - metrics3.stringWidth("Total Bad Apples Eaten: "), SCREEN_HEIGHT / 2 + 140);
+
+        // Istruzioni per iniziare una nuova partita
+        g.setColor(new Color(252, 252, 252));
+        g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.BOLD, 56));
+        FontMetrics metrics4 = getFontMetrics(g.getFont());
+        g.drawString("PRESS SPACE TO START", (SCREEN_WIDTH - metrics4.stringWidth("PRESS SPACE TO START")) / 2, SCREEN_HEIGHT - 100);
     }
 
     public void newApple() {
@@ -210,7 +290,7 @@ public class GamePanel extends JPanel implements ActionListener {
     public void checkApple() {
         if ((X[0] == appleX) && (Y[0] == appleY)) {
             bodyParts++;
-            applesEaten++;
+            score++;
             newApple();
         }
     }
@@ -218,7 +298,8 @@ public class GamePanel extends JPanel implements ActionListener {
     public void checkBadApple() {
         if ((X[0] == badAppleX) && (Y[0] == badAppleY)) {
             bodyParts += 2;
-            applesEaten--;
+            score--;
+            badApplesEaten++;
             badAppleX = -1; // Rimuove la mela cattiva dal campo
             badAppleY = -1;
         }
@@ -226,10 +307,11 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void checkGoldenApple() {
         if ((X[0] == goldenAppleX) && (Y[0] == goldenAppleY)) {
-            if(bodyParts >= 4) {
-                bodyParts -= 3;
+            if (bodyParts > 4) {
+                bodyParts -= 4;
             }
-            applesEaten += 2;
+            score++;
+            goldenApplesEaten++;
             goldenAppleX = -1;
             goldenAppleY = -1;
         }
@@ -247,47 +329,86 @@ public class GamePanel extends JPanel implements ActionListener {
             timer.stop();
             badAppleTimer.stop();
             goldenAppleTimer.stop();
+            gameOver();
+        }
+    }
+
+    public void gameOver() {
+        totalGamesPlayed++;
+        totalApplesEaten += score;
+        totalBadApplesEaten += badApplesEaten;
+        totalGoldenApplesEaten += goldenApplesEaten;
+        totalApples += score - badApplesEaten + goldenApplesEaten;
+
+        if (score > highScore) {
+            highScore = score;
         }
     }
 
     public void gameOver(Graphics g) {
-        // Mostra il punteggio
-        g.setColor(Color.red);
-        g.setFont(new Font("Helvetica", Font.BOLD, 40));
-        FontMetrics metrics1 = getFontMetrics(g.getFont());
-        g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics1.stringWidth("Score: " + applesEaten)) / 2, g.getFont().getSize());
         // Mostra il testo "Game Over"
         g.setColor(Color.red);
-        g.setFont(new Font("Helvetica", Font.BOLD, 75));
-        FontMetrics metrics = getFontMetrics(g.getFont());
-        g.drawString("Game Over", (SCREEN_WIDTH - metrics.stringWidth("Game Over")) / 2, SCREEN_HEIGHT / 2);
+        g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.BOLD, 142));
+        FontMetrics metrics0 = getFontMetrics(g.getFont());
+        g.drawString("GAME OVER", (SCREEN_WIDTH - metrics0.stringWidth("GAME OVER")) / 2, g.getFont().getSize());
+
+        // Mostra il punteggio
+        g.setColor(Color.lightGray);
+        g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.PLAIN, 76));
+        FontMetrics metrics1 = getFontMetrics(g.getFont());
+        g.drawString("Score: " + score, (SCREEN_WIDTH - metrics1.stringWidth("Score: " + score)) / 2, SCREEN_HEIGHT - 650 + g.getFont().getSize());
+        // Mostra il record del punteggio
+        g.drawString("High Score: " + highScore, (SCREEN_WIDTH - metrics1.stringWidth("High Score: " + highScore)) / 2, SCREEN_HEIGHT - 600 + g.getFont().getSize());
+
+        g.setColor(Color.lightGray);
+        g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.PLAIN, 38));
+        FontMetrics metrics2 = getFontMetrics(g.getFont());
+        // Mostra le statistiche delle mele mangiate
+        g.drawString("Normal Apples Eaten: " + score, (SCREEN_WIDTH - metrics2.stringWidth("Normal Apples Eaten: " + score)) / 2, SCREEN_HEIGHT - 500 + g.getFont().getSize());
+        g.drawString("Bad Apples Eaten: " + badApplesEaten, (SCREEN_WIDTH - metrics2.stringWidth("Bad Apples Eaten: " + badApplesEaten)) / 2, SCREEN_HEIGHT - 470 + g.getFont().getSize());
+        g.drawString("Golden Apples Eaten: " + goldenApplesEaten, (SCREEN_WIDTH - metrics2.stringWidth("Golden Apples Eaten: " + goldenApplesEaten)) / 2, SCREEN_HEIGHT - 440 + g.getFont().getSize());
+
+        // Istruzioni per tornare al menu
+        g.setColor(new Color(252, 252, 252));
+        g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.BOLD, 56));
+        FontMetrics metrics3 = getFontMetrics(g.getFont());
+        g.drawString("PRESS SPACE TO RETURN TO MENU", (SCREEN_WIDTH - metrics3.stringWidth("PRESS SPACE TO RETURN TO MENU")) / 2, SCREEN_HEIGHT - 40);
     }
 
     public class MyKeyAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            switch (e.getKeyCode()) {
-                case KeyEvent.VK_A:
-                    if (direction != 'R') {
-                        direction = 'L';
-                    }
-                    break;
-                case KeyEvent.VK_D:
-                    if (direction != 'L') {
-                        direction = 'R';
-                    }
-                    break;
-                case KeyEvent.VK_W:
-                    if (direction != 'D') {
-                        direction = 'U';
-                    }
-                    break;
-                case KeyEvent.VK_S:
-                    if (direction != 'U') {
-                        direction = 'D';
-                    }
-                    break;
+            if (running) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_A:
+                        if (direction != 'R') {
+                            direction = 'L';
+                        }
+                        break;
+                    case KeyEvent.VK_D:
+                        if (direction != 'L') {
+                            direction = 'R';
+                        }
+                        break;
+                    case KeyEvent.VK_W:
+                        if (direction != 'D') {
+                            direction = 'U';
+                        }
+                        break;
+                    case KeyEvent.VK_S:
+                        if (direction != 'U') {
+                            direction = 'D';
+                        }
+                        break;
+                }
+            } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                if (inMenu) {
+                    startGame();
+                } else {
+                    showMenu();
+                }
             }
         }
     }
+
 }
