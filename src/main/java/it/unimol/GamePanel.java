@@ -227,7 +227,7 @@ public class GamePanel extends JPanel implements ActionListener {
         g.setColor(new Color(198, 183, 0));
         g.drawString("Golden Apple: -2 Length, +2 Point", SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 150);
         g.setColor(new Color(200, 125, 187));
-        g.drawString("Pink Apple: Random effect from apples", SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 170);
+        g.drawString("Pink Apple: Random effect", SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 170);
 
         // Statistiche
         g.setColor(new Color(180, 180, 180));
