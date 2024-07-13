@@ -113,10 +113,8 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // Timer per le mele dorate
         goldenAppleTimer = new Timer(getRandomIntervalGolden(), e -> {
-            if (!isGoldenAppleOnField()) { // Verifica se non c'è già una mela dorata sul campo
                 newGoldenApple();
                 goldenAppleTimer.setDelay(getRandomIntervalGolden()); // Setta un nuovo intervallo casuale
-            }
         });
         goldenAppleTimer.start();
 
@@ -281,7 +279,7 @@ public class GamePanel extends JPanel implements ActionListener {
             if (goldenAppleRemovalTimer != null) {
                 goldenAppleRemovalTimer.stop();
             }
-            goldenAppleRemovalTimer = new Timer(5000, e -> {
+            goldenAppleRemovalTimer = new Timer(7000, e -> {
                 goldenAppleX = -1;
                 goldenAppleY = -1;
                 repaint();
@@ -311,9 +309,6 @@ public class GamePanel extends JPanel implements ActionListener {
         } while (!validPosition);
     }
 
-    public boolean isGoldenAppleOnField() {
-        return (goldenAppleX != -1 && goldenAppleY != -1);
-    }
     public boolean isPinkAppleOnField() {
         return (pinkAppleX != -1 && pinkAppleY != -1);
     }
@@ -388,13 +383,21 @@ public class GamePanel extends JPanel implements ActionListener {
             int randomEffect = random.nextInt(3);
             switch (randomEffect) {
                 case 0:
-                    checkApple();
+                    score++;
+                    applesEaten++;
+                    bodyParts++;
                     break;
                 case 1:
-                    checkBadApple();
+                    bodyParts += 2;
+                    score -= 2;
+                    badApplesEaten++;
                     break;
                 case 2:
-                    checkGoldenApple();
+                    if (bodyParts >= 3) {
+                        bodyParts -= 2;
+                    }
+                    score += 2;
+                    goldenApplesEaten++;
                     break;
             }
             pinkAppleX = -1; // Rimuovi la mela casuale dal campo
