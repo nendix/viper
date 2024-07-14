@@ -41,9 +41,19 @@ public class GameLogic {
     Timer pinkAppleTimer;
     Timer goldenAppleRemovalTimer;
     private final GameFrame gameFrame;
+    private SoundManager gameStartSound;
+    private SoundManager gameOverSound;
+    private SoundManager appleSound;
+    private SoundManager badAppleSound;
+    private SoundManager goldenAppleSound;
 
     public GameLogic(GameFrame gameFrame) {
         this.gameFrame = gameFrame;
+        gameStartSound = new SoundManager("sounds/game-start.wav");
+        gameOverSound = new SoundManager("sounds/game-over.wav");
+        appleSound = new SoundManager("sounds/apple.wav");
+        badAppleSound = new SoundManager("sounds/bad-apple.wav");
+        goldenAppleSound = new SoundManager("sounds/gold-apple.wav");
         random = new Random();
     }
 
@@ -58,6 +68,7 @@ public class GameLogic {
     }
     public void startGame() {
         running = true;
+        gameStartSound.play();
         bodyParts = 6;
         score = 0;
         applesEaten = 0;
@@ -208,6 +219,7 @@ public class GameLogic {
 
     public void checkApple() {
         if (X[0] == appleX && Y[0] == appleY) {
+            appleSound.play();
             bodyParts++;
             applesEaten++;
             score++;
@@ -216,16 +228,17 @@ public class GameLogic {
     }
     public void checkBadApple() {
         if ((X[0] == badAppleX) && (Y[0] == badAppleY)) {
+            badAppleSound.play();
             bodyParts += 2;
             score -= 2;
             badApplesEaten++;
             badAppleX = -1; // Rimuove la mela cattiva dal campo
             badAppleY = -1;
-            System.out.println("Bad Apple Eaten!");
         }
     }
     public void checkGoldenApple() {
         if ((X[0] == goldenAppleX) && (Y[0] == goldenAppleY)) {
+            goldenAppleSound.play();
             if (bodyParts >= 3) {
                 bodyParts -= 2;
             }
@@ -233,7 +246,6 @@ public class GameLogic {
             goldenApplesEaten++;
             goldenAppleX = -1;
             goldenAppleY = -1;
-            System.out.println("Golden Apple Eaten!");
             if (goldenAppleRemovalTimer != null) {
                 goldenAppleRemovalTimer.stop();
             }
@@ -244,16 +256,19 @@ public class GameLogic {
             int randomEffect = random.nextInt(3);
             switch (randomEffect) {
                 case 0:
+                    appleSound.play();
                     score++;
                     applesEaten++;
                     bodyParts++;
                     break;
                 case 1:
+                    badAppleSound.play();
                     bodyParts += 2;
                     score -= 2;
                     badApplesEaten++;
                     break;
                 case 2:
+                    goldenAppleSound.play();
                     if (bodyParts >= 3) {
                         bodyParts -= 2;
                     }
@@ -263,7 +278,6 @@ public class GameLogic {
             }
             pinkAppleX = -1; // Rimuovi la mela casuale dal campo
             pinkAppleY = -1; // Rimuovi la mela casuale dal campo
-            System.out.println("Pink Apple eaten!");
         }
     }
 
@@ -280,6 +294,7 @@ public class GameLogic {
             badAppleTimer.stop();
             goldenAppleTimer.stop();
             pinkAppleTimer.stop();
+            gameOverSound.play();
             updateStatistics();
             gameFrame.showGameOverPanel();
         }
