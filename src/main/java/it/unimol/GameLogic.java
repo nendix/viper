@@ -55,6 +55,12 @@ public class GameLogic {
         badAppleSound = new SoundManager("sounds/bad-apple.wav");
         goldenAppleSound = new SoundManager("sounds/gold-apple.wav");
         random = new Random();
+        X[0] = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
+        Y[0] = random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) * UNIT_SIZE;
+        for (int i = 1; i < GAME_UNITS; i++) {
+            X[i] = X[0];
+            Y[i] = Y[0];
+        }
     }
 
     private int getRandomIntervalBad() { // Genera un intervallo casuale tra 10 e 30 secondi
@@ -69,15 +75,13 @@ public class GameLogic {
     public void startGame() {
         running = true;
         gameStartSound.play();
-        bodyParts = 6;
+        bodyParts = 3;
         score = 0;
         applesEaten = 0;
         badApplesEaten = 0;
         goldenApplesEaten = 0;
         direction = 'R';
         newApple();
-        X[0] = 0;
-        Y[0] = 0;
         timer = new Timer(DELAY, e -> {
             if (running) {
                 move();
@@ -229,8 +233,8 @@ public class GameLogic {
     public void checkBadApple() {
         if ((X[0] == badAppleX) && (Y[0] == badAppleY)) {
             badAppleSound.play();
-            bodyParts += 2;
-            score -= 2;
+            bodyParts++;
+            score -= 3;
             badApplesEaten++;
             badAppleX = -1; // Rimuove la mela cattiva dal campo
             badAppleY = -1;
@@ -239,10 +243,10 @@ public class GameLogic {
     public void checkGoldenApple() {
         if ((X[0] == goldenAppleX) && (Y[0] == goldenAppleY)) {
             goldenAppleSound.play();
-            if (bodyParts >= 3) {
-                bodyParts -= 2;
+            if (bodyParts >= 2) {
+                bodyParts--;
             }
-            score += 2;
+            score += 3;
             goldenApplesEaten++;
             goldenAppleX = -1;
             goldenAppleY = -1;
@@ -333,7 +337,7 @@ public class GameLogic {
 
     // Metodi per ottenere le statistiche totali
     public int getScore() { return score; }
-    public int getLenght() { return bodyParts; }
+    public int getLength() { return bodyParts; }
     public int getHighScore() { return highScore; }
     public int getTotalGamesPlayed() { return totalGamesPlayed; }
     public int getTotalApplesEaten() { return totalApplesEaten; }
@@ -343,4 +347,7 @@ public class GameLogic {
     public int getApplesEaten() { return applesEaten; }
     public int getBadApplesEaten() { return badApplesEaten; }
     public int getGoldenApplesEaten() { return goldenApplesEaten; }
+
+    public int getSnakeX() { return X[0]; }
+    public int getSnakeY() { return Y[0]; }
 }

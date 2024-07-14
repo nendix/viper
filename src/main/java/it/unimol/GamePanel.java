@@ -32,11 +32,11 @@ public class GamePanel extends JPanel {
         if (gameLogic.isRunning()) {
 
             g.setColor(new Color(38, 39,42));
-            for (int x = 0; x <= GameLogic.SCREEN_WIDTH; x += GameLogic.UNIT_SIZE) {
+            for (int x = 0; x < GameLogic.SCREEN_WIDTH; x += GameLogic.UNIT_SIZE) {
                 g.drawLine(x, 0, x, GameLogic.SCREEN_HEIGHT);
             }
             // Disegna le linee orizzontali della griglia
-            for (int y = 0; y <= GameLogic.SCREEN_HEIGHT; y += GameLogic.UNIT_SIZE) {
+            for (int y = 0; y < GameLogic.SCREEN_HEIGHT; y += GameLogic.UNIT_SIZE) {
                 g.drawLine(0, y, GameLogic.SCREEN_WIDTH, y);
             }
             for (int i = 0; i < gameLogic.getBodyParts(); i++) {
@@ -48,19 +48,19 @@ public class GamePanel extends JPanel {
             g.fillRoundRect(gameLogic.getAppleX(), gameLogic.getAppleY(), UNIT_SIZE, UNIT_SIZE, 12, 12);
 
             // Disegna la mela cattiva
-            if (gameLogic.getBadAppleX() != -1 && gameLogic.getBadAppleY() != -1) {
+            if (gameLogic.getBadAppleX() >= 0 && gameLogic.getBadAppleY() >= 0) {
                 g.setColor(new Color(97, 89, 6));
                 g.fillRoundRect(gameLogic.getBadAppleX(), gameLogic.getBadAppleY(), UNIT_SIZE, UNIT_SIZE, 12, 12);
             }
 
             // Disegna la mela dorata
-            if (gameLogic.getGoldenAppleX() != -1 && gameLogic.getGoldenAppleY() != -1) {
+            if (gameLogic.getGoldenAppleX() >= 0 && gameLogic.getGoldenAppleY() >= 0) {
                 g.setColor(new Color(220, 197, 17));
                 g.fillRoundRect(gameLogic.getGoldenAppleX(), gameLogic.getGoldenAppleY(), UNIT_SIZE, UNIT_SIZE, 12, 12);
             }
 
             // Disegna la mela casuale
-            if (gameLogic.getPinkAppleX() != -1 && gameLogic.getPinkAppleY() != -1) {
+            if (gameLogic.getPinkAppleX() >= 0 && gameLogic.getPinkAppleY() >= 0) {
                 g.setColor(new Color(200, 125, 187));
                 g.fillRoundRect(gameLogic.getPinkAppleX(), gameLogic.getPinkAppleY(), UNIT_SIZE, UNIT_SIZE, 12, 12);
             }
@@ -69,7 +69,7 @@ public class GamePanel extends JPanel {
             g.setColor(new Color(180, 180, 180));
             g.setFont(FontLoader.loadFont("ByteBounce.ttf", Font.PLAIN, 30));
             g.drawString("Score: " + gameLogic.getScore(), 4, SCREEN_HEIGHT - 4);
-            g.drawString("Length: " + gameLogic.getLenght(), 120, SCREEN_HEIGHT - 4);
+            g.drawString("Length: " + gameLogic.getLength(), 120, SCREEN_HEIGHT - 4);
         }
     }
 

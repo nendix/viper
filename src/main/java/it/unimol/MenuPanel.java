@@ -58,9 +58,9 @@ public class MenuPanel extends JPanel {
         g.setColor(new Color(247, 84, 100));
         g.drawString("Apple: +1 Length, +1 Point", SCREEN_WIDTH - (SCREEN_WIDTH - 20) , SCREEN_HEIGHT / 2 + 110);
         g.setColor(new Color(133, 112, 66));
-        g.drawString("Bad Apple: +2 Length, -2 Point", SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 130);
+        g.drawString("Bad Apple: +1 Length, -3 Point", SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 130);
         g.setColor(new Color(198, 183, 0));
-        g.drawString("Golden Apple: -2 Length, +2 Point", SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 150);
+        g.drawString("Golden Apple: -1 Length, +3 Point", SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 150);
         g.setColor(new Color(200, 125, 187));
         g.drawString("Pink Apple: Random effect", SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 170);
 
