@@ -1,5 +1,6 @@
 # Viper
 Viper is my version of the classic arcade game *SNAKE*
+---
 
 **Viper demo**
 <img width="800" alt="viper_gamestart" src="https://github.com/user-attachments/assets/66cf96aa-505a-453a-a887-0da083a93523">
