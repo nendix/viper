@@ -11,70 +11,57 @@ public class GameLogic {
   private static final int GAME_UNITS =
       (SCREEN_WIDTH * SCREEN_HEIGHT) / (UNIT_SIZE * UNIT_SIZE);
   public static final int DELAY = 150;
-  static final int DELAY_DECREMENT = 5; // Decremento del DELAY per ogni punto
-  static final int MIN_DELAY =
-      30; // Valore minimo del DELAY per limitare la velocità massima
+  static final int DELAY_DECREMENT = 5;
+  static final int MIN_DELAY = 30;
 
   public int[] X = new int[GAME_UNITS];
   public int[] Y = new int[GAME_UNITS];
   private int bodyParts;
-  private int appleX;
-  private int appleY;
-  private int badAppleX = -1;
-  private int badAppleY = -1;
-  private int goldenAppleX = -1;
-  private int goldenAppleY = -1;
-  private int pinkAppleX = -1;
-  private int pinkAppleY = -1;
-  private int applesEaten;
-  private int badApplesEaten;
-  private int goldenApplesEaten;
   private int score;
-  private int highScore = 0;
-  private int totalGamesPlayed = 0;
-  private int totalApplesEaten = 0;
-  private int totalBadApplesEaten = 0;
-  private int totalGoldenApplesEaten = 0;
   private char direction = 'R';
   private boolean running = false;
   private Timer timer;
+  private Timer badAppleTimer;
+  private Timer goldenAppleTimer;
+  private Timer pinkAppleTimer;
+
   private final Random random;
-  Timer badAppleTimer;
-  Timer goldenAppleTimer;
-  Timer pinkAppleTimer;
-  Timer goldenAppleRemovalTimer;
   private final GameFrame gameFrame;
+
+  private Apple apple;
+  private Apple badApple;
+  private Apple goldenApple;
+  private Apple pinkApple;
+
   private SoundManager gameStartSound;
   private SoundManager gameOverSound;
   private SoundManager appleSound;
   private SoundManager badAppleSound;
   private SoundManager goldenAppleSound;
 
+  private int highScore = 0;
+  private int totalGamesPlayed = 0;
+  private int totalApplesEaten = 0;
+  private int totalBadApplesEaten = 0;
+  private int totalGoldenApplesEaten = 0;
+  private int applesEaten = 0;
+  private int badApplesEaten = 0;
+  private int goldenApplesEaten = 0;
+
   public GameLogic(GameFrame gameFrame) {
     this.gameFrame = gameFrame;
+    random = new Random();
     gameStartSound = new SoundManager("sounds/game-start.wav");
     gameOverSound = new SoundManager("sounds/game-over.wav");
     appleSound = new SoundManager("sounds/apple.wav");
     badAppleSound = new SoundManager("sounds/bad-apple.wav");
-    goldenAppleSound = new SoundManager("sounds/gold-apple.wav");
-    random = new Random();
+    goldenAppleSound = new SoundManager("sounds/golden-apple.wav");
     X[0] = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
     Y[0] = random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) * UNIT_SIZE;
     for (int i = 1; i < GAME_UNITS; i++) {
       X[i] = X[0];
       Y[i] = Y[0];
     }
-  }
-
-  // Genera un intervallo casuale tra 10 e 30 secondi
-  private int getRandomIntervalBad() { return random.nextInt(20000) + 10000; }
-
-  // Genera un intervallo casuale tra 30 e 60 secondi
-  private int getRandomIntervalPink() { return random.nextInt(30000) + 30000; }
-
-  // Genera un intervallo casuale tra 15 e 60 secondi
-  private int getRandomIntervalGolden() {
-    return random.nextInt(15000) + 45000;
   }
 
   public void startGame() {
@@ -85,8 +72,11 @@ public class GameLogic {
     applesEaten = 0;
     badApplesEaten = 0;
     goldenApplesEaten = 0;
-    direction = 'R';
     newApple();
+    startTimers();
+  }
+
+  private void startTimers() {
     timer = new Timer(DELAY, e -> {
       if (running) {
         move();
@@ -95,40 +85,35 @@ public class GameLogic {
         checkGoldenApple();
         checkPinkApple();
         checkCollisions();
-        // Aumenta la velocità del serpente con l'aumentare del punteggio
         int newDelay = Math.max(DELAY - score * DELAY_DECREMENT, MIN_DELAY);
         timer.setDelay(newDelay);
-        gameFrame.repaint(); // Aggiorna il frame dopo ogni movimento
+        gameFrame.repaint();
       }
     });
     timer.start();
-    // Timer per le mele cattive
-    badAppleTimer = new Timer(getRandomIntervalBad(), e -> {
-      newBadApple();
-      badAppleTimer.setDelay(
-          getRandomIntervalBad()); // Setta un nuovo intervallo casuale
+
+    badAppleTimer = new Timer(getRandomInterval(10000, 20000), e -> {
+      badApple = generateApple(Apple.AppleType.BAD);
+      badAppleTimer.setDelay(getRandomInterval(10000, 20000));
     });
     badAppleTimer.start();
-    // Timer per le mele dorate
-    goldenAppleTimer = new Timer(getRandomIntervalGolden(), e -> {
-      newGoldenApple();
-      goldenAppleTimer.setDelay(
-          getRandomIntervalGolden()); // Setta un nuovo intervallo casuale
+
+    goldenAppleTimer = new Timer(getRandomInterval(45000, 60000), e -> {
+      goldenApple = generateApple(Apple.AppleType.GOLDEN);
+      goldenAppleTimer.setDelay(getRandomInterval(45000, 60000));
     });
     goldenAppleTimer.start();
-    // Timer per le mele casuali
-    pinkAppleTimer = new Timer(getRandomIntervalPink(), e -> {
-      if (!isPinkAppleOnField()) { // Verifica se non c'è già una mela dorata
-                                   // sul campo
-        newPinkApple();
-        pinkAppleTimer.setDelay(
-            getRandomIntervalPink()); // Setta un nuovo intervallo casuale
+
+    pinkAppleTimer = new Timer(getRandomInterval(30000, 60000), e -> {
+      if (pinkApple == null) {
+        pinkApple = generateApple(Apple.AppleType.PINK);
+        pinkAppleTimer.setDelay(getRandomInterval(30000, 60000));
       }
     });
     pinkAppleTimer.start();
   }
 
-  public void move() {
+  private void move() {
     for (int i = bodyParts; i > 0; i--) {
       X[i] = X[i - 1];
       Y[i] = Y[i - 1];
@@ -162,121 +147,64 @@ public class GameLogic {
     }
   }
 
-  public void newApple() {
-    boolean validPosition;
+  private Apple generateApple(Apple.AppleType type) {
+    int x, y;
     do {
-      validPosition = true;
-      appleX = random.nextInt((int)(SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-      appleY = random.nextInt((int)(SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
-      for (int i = 0; i < bodyParts; i++) {
-        if (X[i] == appleX && Y[i] == appleY) {
-          validPosition = false;
-          break;
-        }
-      }
-    } while (!validPosition);
+      x = random.nextInt((SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
+      y = random.nextInt((SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
+    } while (!isValidPosition(x, y));
+    return new Apple(x, y, type);
   }
 
-  public void newBadApple() {
-    boolean validPosition;
-    do {
-      validPosition = true;
-      badAppleX = random.nextInt((int)(SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-      badAppleY = random.nextInt((int)(SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
-      for (int i = 0; i < bodyParts; i++) {
-        if (X[i] == badAppleX && Y[i] == badAppleY) {
-          validPosition = false;
-          break;
-        }
+  private boolean isValidPosition(int x, int y) {
+    for (int i = 0; i < bodyParts; i++) {
+      if (X[i] == x && Y[i] == y) {
+        return false;
       }
-    } while (!validPosition);
+    }
+    return true;
   }
 
-  public void newGoldenApple() {
-    boolean validPosition;
-    do {
-      validPosition = true;
-      goldenAppleX =
-          random.nextInt((int)(SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-      goldenAppleY =
-          random.nextInt((int)(SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
-      if (goldenAppleRemovalTimer != null) {
-        goldenAppleRemovalTimer.stop();
-      }
-      goldenAppleRemovalTimer = new Timer(7000, e -> {
-        goldenAppleX = -1;
-        goldenAppleY = -1;
-        gameFrame.repaint();
-      });
-      goldenAppleRemovalTimer.setRepeats(false);
-      goldenAppleRemovalTimer.start();
-      for (int i = 0; i < bodyParts; i++) {
-        if (X[i] == goldenAppleX && Y[i] == goldenAppleY) {
-          validPosition = false;
-          break;
-        }
-      }
-    } while (!validPosition);
-  }
-
-  public void newPinkApple() {
-    boolean validPosition;
-    do {
-      validPosition = true;
-      pinkAppleX = random.nextInt((int)(SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-      pinkAppleY = random.nextInt((int)(SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
-      for (int i = 0; i < bodyParts; i++) {
-        if (X[i] == pinkAppleX && Y[i] == pinkAppleY) {
-          validPosition = false;
-          break;
-        }
-      }
-    } while (!validPosition);
-  }
-
-  public boolean isPinkAppleOnField() {
-    return (pinkAppleX != -1 && pinkAppleY != -1);
-  }
+  public void newApple() { apple = generateApple(Apple.AppleType.NORMAL); }
 
   public void checkApple() {
-    if (X[0] == appleX && Y[0] == appleY) {
+    if (apple != null && X[0] == apple.getX() && Y[0] == apple.getY()) {
       appleSound.play();
       bodyParts++;
       applesEaten++;
       score++;
+      apple = null;
       newApple();
     }
   }
 
   public void checkBadApple() {
-    if ((X[0] == badAppleX) && (Y[0] == badAppleY)) {
+    if (badApple != null && X[0] == badApple.getX() &&
+        Y[0] == badApple.getY()) {
       badAppleSound.play();
       bodyParts++;
       score -= 3;
       badApplesEaten++;
-      badAppleX = -1; // Rimuove la mela cattiva dal campo
-      badAppleY = -1;
+      badApple = null;
     }
   }
 
   public void checkGoldenApple() {
-    if ((X[0] == goldenAppleX) && (Y[0] == goldenAppleY)) {
+    if (goldenApple != null && X[0] == goldenApple.getX() &&
+        Y[0] == goldenApple.getY()) {
       goldenAppleSound.play();
       if (bodyParts >= 2) {
         bodyParts--;
       }
       score += 3;
       goldenApplesEaten++;
-      goldenAppleX = -1;
-      goldenAppleY = -1;
-      if (goldenAppleRemovalTimer != null) {
-        goldenAppleRemovalTimer.stop();
-      }
+      goldenApple = null;
     }
   }
 
   public void checkPinkApple() {
-    if ((X[0] == pinkAppleX) && (Y[0] == pinkAppleY)) {
+    if (pinkApple != null && X[0] == pinkApple.getX() &&
+        Y[0] == pinkApple.getY()) {
       int randomEffect = random.nextInt(3);
       switch (randomEffect) {
       case 0:
@@ -300,13 +228,11 @@ public class GameLogic {
         goldenApplesEaten++;
         break;
       }
-      pinkAppleX = -1; // Rimuovi la mela casuale dal campo
-      pinkAppleY = -1; // Rimuovi la mela casuale dal campo
+      pinkApple = null;
     }
   }
 
   public void checkCollisions() {
-    // Check if head collides with body
     for (int i = bodyParts; i > 0; i--) {
       if (X[0] == X[i] && Y[0] == Y[i]) {
         running = false;
@@ -324,65 +250,43 @@ public class GameLogic {
     }
   }
 
-  // Metodo per aggiornare le statistiche quando necessario
-  public void updateStatistics() {
+  private void updateStatistics() {
     totalGamesPlayed++;
     totalApplesEaten += applesEaten;
     totalBadApplesEaten += badApplesEaten;
     totalGoldenApplesEaten += goldenApplesEaten;
-
-    // Aggiorna il record del punteggio
     if (score > highScore) {
       highScore = score;
     }
   }
 
-  public int getBodyParts() { return bodyParts; }
-
-  public int getAppleX() { return appleX; }
-
-  public int getAppleY() { return appleY; }
-
-  public int getBadAppleX() { return badAppleX; }
-
-  public int getBadAppleY() { return badAppleY; }
-
-  public int getGoldenAppleX() { return goldenAppleX; }
-
-  public int getGoldenAppleY() { return goldenAppleY; }
-
-  public int getPinkAppleX() { return pinkAppleX; }
-
-  public int getPinkAppleY() { return pinkAppleY; }
+  private int getRandomInterval(int min, int max) {
+    return random.nextInt(max - min) + min;
+  }
 
   public boolean isRunning() { return running; }
 
-  public void setDirection(char direction) { this.direction = direction; }
-
-  public char getDirection() { return direction; }
-
-  // Metodi per ottenere le statistiche totali
-  public int getScore() { return score; }
-
   public int getLength() { return bodyParts; }
 
+  public int getScore() { return score; }
   public int getHighScore() { return highScore; }
-
   public int getTotalGamesPlayed() { return totalGamesPlayed; }
-
   public int getTotalApplesEaten() { return totalApplesEaten; }
-
   public int getTotalBadApplesEaten() { return totalBadApplesEaten; }
-
   public int getTotalGoldenApplesEaten() { return totalGoldenApplesEaten; }
 
   public int getApplesEaten() { return applesEaten; }
-
   public int getBadApplesEaten() { return badApplesEaten; }
-
   public int getGoldenApplesEaten() { return goldenApplesEaten; }
 
   public int getSnakeX() { return X[0]; }
-
   public int getSnakeY() { return Y[0]; }
+
+  public void setDirection(char direction) { this.direction = direction; }
+  public char getDirection() { return direction; }
+
+  public Apple getApple() { return apple; }
+  public Apple getBadApple() { return badApple; }
+  public Apple getGoldenApple() { return goldenApple; }
+  public Apple getPinkApple() { return pinkApple; }
 }

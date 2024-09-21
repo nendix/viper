@@ -2,7 +2,6 @@ package it.unimol.viper.ui;
 
 import it.unimol.viper.app.FontLoader;
 import it.unimol.viper.app.GameLogic;
-
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
