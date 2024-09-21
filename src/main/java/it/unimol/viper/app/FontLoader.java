@@ -1,4 +1,4 @@
-package it.unimol;
+package it.unimol.viper.app;
 
 import java.awt.Font;
 import java.awt.FontFormatException;

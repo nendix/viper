@@ -1,4 +1,6 @@
-package it.unimol;
+package it.unimol.viper.app;
+
+import it.unimol.viper.ui.GameFrame;
 
 import java.util.Random;
 import javax.swing.*;
@@ -183,8 +185,7 @@ public class GameLogic {
       badAppleX = random.nextInt((int)(SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
       badAppleY = random.nextInt((int)(SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
       for (int i = 0; i < bodyParts; i++) {
-        if ((X[i] == badAppleX && Y[i] == badAppleY) ||
-            (appleX == badAppleX && appleY == badAppleY)) {
+        if (X[i] == badAppleX && Y[i] == badAppleY) {
           validPosition = false;
           break;
         }
@@ -211,8 +212,7 @@ public class GameLogic {
       goldenAppleRemovalTimer.setRepeats(false);
       goldenAppleRemovalTimer.start();
       for (int i = 0; i < bodyParts; i++) {
-        if ((X[i] == goldenAppleX && Y[i] == goldenAppleY) ||
-            (appleX == goldenAppleX && appleY == goldenAppleY)) {
+        if (X[i] == goldenAppleX && Y[i] == goldenAppleY) {
           validPosition = false;
           break;
         }
@@ -227,8 +227,7 @@ public class GameLogic {
       pinkAppleX = random.nextInt((int)(SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
       pinkAppleY = random.nextInt((int)(SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
       for (int i = 0; i < bodyParts; i++) {
-        if ((X[i] == pinkAppleX && Y[i] == pinkAppleY) ||
-            (appleX == pinkAppleX && appleY == pinkAppleY)) {
+        if (X[i] == pinkAppleX && Y[i] == pinkAppleY) {
           validPosition = false;
           break;
         }

@@ -1,8 +1,10 @@
-package it.unimol;
+package it.unimol.viper.ui;
 
-import static it.unimol.GameLogic.SCREEN_HEIGHT;
-import static it.unimol.GameLogic.UNIT_SIZE;
+import static it.unimol.viper.app.GameLogic.SCREEN_HEIGHT;
+import static it.unimol.viper.app.GameLogic.UNIT_SIZE;
 
+import it.unimol.viper.app.FontLoader;
+import it.unimol.viper.app.GameLogic;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;

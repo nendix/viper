@@ -1,5 +1,6 @@
-package it.unimol;
+package it.unimol.viper.ui;
 
+import it.unimol.viper.app.GameLogic;
 import java.awt.*;
 import javax.swing.*;
 
@@ -18,10 +19,9 @@ public class GameFrame extends JFrame {
     gameLogic = new GameLogic(this);
     gamePanel = new GamePanel(gameLogic, this);
     gameOverPanel = new GameOverPanel(gameLogic, this);
-    menuPanel = new MenuPanel(gameLogic, this); // Aggiunta del MenuPanel
+    menuPanel = new MenuPanel(gameLogic, this);
 
-    mainPanel.add(menuPanel,
-                  "MenuPanel"); // Aggiunta del MenuPanel al mainPanel
+    mainPanel.add(menuPanel, "MenuPanel");
     mainPanel.add(gamePanel, "GamePanel");
     mainPanel.add(gameOverPanel, "GameOverPanel");
 
@@ -33,7 +33,6 @@ public class GameFrame extends JFrame {
     setLocationRelativeTo(null);
     setVisible(true);
 
-    // Mostra il MenuPanel all'avvio
     showMenuPanel();
   }
 

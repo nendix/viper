@@ -1,8 +1,10 @@
-package it.unimol;
+package it.unimol.viper;
+
+import it.unimol.viper.ui.GameFrame;
 
 import javax.swing.*;
 
-public class ViperGame {
+public class Viper {
   public static void main(String[] args) {
     SwingUtilities.invokeLater(() -> {
       GameFrame gameFrame = new GameFrame();
