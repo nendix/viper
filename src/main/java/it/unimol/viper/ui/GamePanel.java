@@ -11,13 +11,12 @@ import javax.swing.*;
 
 public class GamePanel extends JPanel {
   private GameLogic gameLogic;
-  private GameFrame gameFrame;
 
   public GamePanel(GameLogic gameLogic, GameFrame gameFrame) {
     this.gameLogic = gameLogic;
-    this.gameFrame = gameFrame;
     setPreferredSize(new Dimension(GameLogic.SCREEN_WIDTH, SCREEN_HEIGHT));
     setBackground(new Color(28, 28, 28));
+    setDoubleBuffered(true);
     setFocusable(true); // Assicura che il pannello abbia il focus per catturare
                         // gli eventi da tastiera
 

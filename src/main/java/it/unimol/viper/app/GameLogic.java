@@ -1,7 +1,6 @@
 package it.unimol.viper.app;
 
 import it.unimol.viper.ui.GameFrame;
-
 import java.util.Random;
 import javax.swing.*;
 

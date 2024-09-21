@@ -8,14 +8,21 @@ public class SoundManager {
 
   public SoundManager(String soundFilePath) {
     try {
-      // Utilizza ClassLoader per ottenere il percorso assoluto del file audio
-      ClassLoader classLoader = getClass().getClassLoader();
-      File soundFile =
-          new File(classLoader.getResource(soundFilePath).getFile());
+      // Utilizza ClassLoader per ottenere il file audio come InputStream
+      InputStream audioSrc =
+          getClass().getClassLoader().getResourceAsStream(soundFilePath);
+      if (audioSrc == null) {
+        throw new FileNotFoundException("Audio file not found: " +
+                                        soundFilePath);
+      }
 
-      // Carica il file audio
+      // Convert the InputStream to a BufferedInputStream to handle audio
+      // loading
+      InputStream bufferedIn = new BufferedInputStream(audioSrc);
       AudioInputStream audioInputStream =
-          AudioSystem.getAudioInputStream(soundFile);
+          AudioSystem.getAudioInputStream(bufferedIn);
+
+      // Ottieni il Clip e carica il file audio
       clip = AudioSystem.getClip();
       clip.open(audioInputStream);
     } catch (UnsupportedAudioFileException | IOException |
@@ -26,23 +33,27 @@ public class SoundManager {
 
   public void play() {
     if (clip != null) {
-      stop();                   // Stoppa il suono corrente se sta già suonando
-      clip.setFramePosition(0); // Riavvolge il suono al principio
-      clip.start();             // Avvia il suono
+      new Thread(() -> {
+        stop();                   // Stop the sound if it's already playing
+        clip.setFramePosition(0); // Rewind to the beginning
+        clip.start();             // Start playing
+      }).start();                 // Run playback in a new thread
     }
   }
 
   public void loop() {
     if (clip != null) {
-      stop();                   // Stoppa il suono corrente se sta già suonando
-      clip.setFramePosition(0); // Riavvolge il suono al principio
-      clip.loop(Clip.LOOP_CONTINUOUSLY); // Avvia il suono in loop continuo
+      new Thread(() -> {
+        stop();                   // Stop the sound if it's already playing
+        clip.setFramePosition(0); // Rewind to the beginning
+        clip.loop(Clip.LOOP_CONTINUOUSLY); // Loop the sound continuously
+      }).start();                          // Run looping in a new thread
     }
   }
 
   public void stop() {
-    if (clip.isRunning()) {
-      clip.stop(); // Ferma il suono se sta suonando
+    if (clip != null && clip.isRunning()) {
+      clip.stop(); // Stop the sound if it's playing
     }
   }
 }

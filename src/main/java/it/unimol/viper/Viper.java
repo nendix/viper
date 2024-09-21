@@ -1,7 +1,6 @@
 package it.unimol.viper;
 
 import it.unimol.viper.ui.GameFrame;
-
 import javax.swing.*;
 
 public class Viper {
