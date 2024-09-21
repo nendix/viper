@@ -80,10 +80,7 @@ public class GameLogic {
     timer = new Timer(DELAY, e -> {
       if (running) {
         move();
-        checkApple();
-        checkBadApple();
-        checkGoldenApple();
-        checkPinkApple();
+        checkApples();
         checkCollisions();
         int newDelay = Math.max(DELAY - score * DELAY_DECREMENT, MIN_DELAY);
         timer.setDelay(newDelay);
@@ -167,68 +164,59 @@ public class GameLogic {
 
   public void newApple() { apple = generateApple(Apple.AppleType.NORMAL); }
 
-  public void checkApple() {
-    if (apple != null && X[0] == apple.getX() && Y[0] == apple.getY()) {
+  public void checkApples() {
+    checkApple(apple, Apple.AppleType.NORMAL);
+    checkApple(badApple, Apple.AppleType.BAD);
+    checkApple(goldenApple, Apple.AppleType.GOLDEN);
+    checkApple(pinkApple, Apple.AppleType.PINK);
+  }
+
+  private void checkApple(Apple a, Apple.AppleType type) {
+    if (a != null && a.getX() == X[0] && a.getY() == Y[0]) {
+      eatApple(type);
+    }
+  }
+
+  private void eatApple(Apple.AppleType type) {
+    switch (type) {
+    case NORMAL:
       appleSound.play();
-      bodyParts++;
-      applesEaten++;
       score++;
+      applesEaten++;
+      bodyParts++;
       apple = null;
       newApple();
-    }
-  }
-
-  public void checkBadApple() {
-    if (badApple != null && X[0] == badApple.getX() &&
-        Y[0] == badApple.getY()) {
+      break;
+    case BAD:
       badAppleSound.play();
-      bodyParts++;
       score -= 3;
       badApplesEaten++;
+      bodyParts++;
       badApple = null;
-    }
-  }
-
-  public void checkGoldenApple() {
-    if (goldenApple != null && X[0] == goldenApple.getX() &&
-        Y[0] == goldenApple.getY()) {
+      break;
+    case GOLDEN:
       goldenAppleSound.play();
-      if (bodyParts >= 2) {
-        bodyParts--;
-      }
       score += 3;
       goldenApplesEaten++;
+      if (bodyParts > 2)
+        bodyParts--;
       goldenApple = null;
-    }
-  }
-
-  public void checkPinkApple() {
-    if (pinkApple != null && X[0] == pinkApple.getX() &&
-        Y[0] == pinkApple.getY()) {
-      int randomEffect = random.nextInt(3);
-      switch (randomEffect) {
+      break;
+    case PINK:
+      int effect = random.nextInt(3);
+      switch (effect) {
       case 0:
-        appleSound.play();
-        score++;
-        applesEaten++;
-        bodyParts++;
+        eatApple(Apple.AppleType.NORMAL);
         break;
       case 1:
-        badAppleSound.play();
-        bodyParts += 2;
-        score -= 2;
-        badApplesEaten++;
+        eatApple(Apple.AppleType.BAD);
         break;
       case 2:
-        goldenAppleSound.play();
-        if (bodyParts >= 3) {
-          bodyParts -= 2;
-        }
-        score += 2;
-        goldenApplesEaten++;
+        eatApple(Apple.AppleType.GOLDEN);
         break;
       }
       pinkApple = null;
+      break;
     }
   }
 
