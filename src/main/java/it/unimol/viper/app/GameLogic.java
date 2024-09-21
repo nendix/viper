@@ -2,12 +2,11 @@ package it.unimol.viper.app;
 
 import it.unimol.viper.ui.GameFrame;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 import javax.swing.*;
 
 public class GameLogic {
-  private Map<String, SoundManager> soundMap;
+  private HashMap<String, SoundManager> soundMap;
   public static final int SCREEN_WIDTH = 1000;
   public static final int SCREEN_HEIGHT = 800;
   public static final int UNIT_SIZE = 25;
@@ -200,7 +199,7 @@ public class GameLogic {
       score += 3;
       goldenApplesEaten++;
       if (bodyParts > 2)
-        bodyParts--;
+        bodyParts -= 2;
       goldenApple = null;
       break;
     case PINK:

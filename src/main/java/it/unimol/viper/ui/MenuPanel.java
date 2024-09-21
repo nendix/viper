@@ -2,7 +2,6 @@ package it.unimol.viper.ui;
 
 import it.unimol.viper.app.FontLoader;
 import it.unimol.viper.app.GameLogic;
-
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -77,7 +76,7 @@ public class MenuPanel extends JPanel {
     g.drawString("Bad Apple: +1 Length, -3 Point",
                  SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 130);
     g.setColor(new Color(198, 183, 0));
-    g.drawString("Golden Apple: -1 Length, +3 Point",
+    g.drawString("Golden Apple: -2 Length, +3 Point",
                  SCREEN_WIDTH - (SCREEN_WIDTH - 20), SCREEN_HEIGHT / 2 + 150);
     g.setColor(new Color(200, 125, 187));
     g.drawString("Pink Apple: Random effect",
