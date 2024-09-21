@@ -1,10 +1,13 @@
 package it.unimol.viper.app;
 
 import it.unimol.viper.ui.GameFrame;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import javax.swing.*;
 
 public class GameLogic {
+  private Map<String, SoundManager> soundMap;
   public static final int SCREEN_WIDTH = 1000;
   public static final int SCREEN_HEIGHT = 800;
   public static final int UNIT_SIZE = 25;
@@ -33,12 +36,7 @@ public class GameLogic {
   private Apple goldenApple;
   private Apple pinkApple;
 
-  private SoundManager gameStartSound;
-  private SoundManager gameOverSound;
-  private SoundManager appleSound;
-  private SoundManager badAppleSound;
-  private SoundManager goldenAppleSound;
-
+  // statistics
   private int highScore = 0;
   private int totalGamesPlayed = 0;
   private int totalApplesEaten = 0;
@@ -51,11 +49,12 @@ public class GameLogic {
   public GameLogic(GameFrame gameFrame) {
     this.gameFrame = gameFrame;
     random = new Random();
-    gameStartSound = new SoundManager("sounds/game-start.wav");
-    gameOverSound = new SoundManager("sounds/game-over.wav");
-    appleSound = new SoundManager("sounds/apple.wav");
-    badAppleSound = new SoundManager("sounds/bad-apple.wav");
-    goldenAppleSound = new SoundManager("sounds/golden-apple.wav");
+    soundMap = new HashMap<>();
+    soundMap.put("gameStart", new SoundManager("sounds/game-start.wav"));
+    soundMap.put("gameOver", new SoundManager("sounds/game-over.wav"));
+    soundMap.put("apple", new SoundManager("sounds/apple.wav"));
+    soundMap.put("badApple", new SoundManager("sounds/bad-apple.wav"));
+    soundMap.put("goldenApple", new SoundManager("sounds/golden-apple.wav"));
     X[0] = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
     Y[0] = random.nextInt(SCREEN_HEIGHT / UNIT_SIZE) * UNIT_SIZE;
     for (int i = 1; i < GAME_UNITS; i++) {
@@ -64,9 +63,11 @@ public class GameLogic {
     }
   }
 
+  private void playSound(String sound) { soundMap.get(sound).play(); }
+
   public void startGame() {
     running = true;
-    gameStartSound.play();
+    playSound("gameStart");
     bodyParts = 3;
     score = 0;
     applesEaten = 0;
@@ -180,7 +181,7 @@ public class GameLogic {
   private void eatApple(Apple.AppleType type) {
     switch (type) {
     case NORMAL:
-      appleSound.play();
+      playSound("apple");
       score++;
       applesEaten++;
       bodyParts++;
@@ -188,14 +189,14 @@ public class GameLogic {
       newApple();
       break;
     case BAD:
-      badAppleSound.play();
+      playSound("badApple");
       score -= 3;
       badApplesEaten++;
       bodyParts++;
       badApple = null;
       break;
     case GOLDEN:
-      goldenAppleSound.play();
+      playSound("goldenApple");
       score += 3;
       goldenApplesEaten++;
       if (bodyParts > 2)
@@ -232,7 +233,7 @@ public class GameLogic {
       badAppleTimer.stop();
       goldenAppleTimer.stop();
       pinkAppleTimer.stop();
-      gameOverSound.play();
+      playSound("gameOver");
       updateStatistics();
       gameFrame.showGameOverPanel();
     }
