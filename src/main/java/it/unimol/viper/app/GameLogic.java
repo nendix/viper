@@ -1,12 +1,12 @@
 package it.unimol.viper.app;
 
 import it.unimol.viper.ui.GameFrame;
-import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.*;
 
 public class GameLogic {
-  private HashMap<String, SoundManager> soundMap;
+  private ConcurrentHashMap<String, SoundManager> soundMap;
   public static final int SCREEN_WIDTH = 1000;
   public static final int SCREEN_HEIGHT = 800;
   public static final int UNIT_SIZE = 25;
@@ -21,6 +21,7 @@ public class GameLogic {
   private int bodyParts;
   private int score;
   private char direction = 'R';
+  private char lastPressedDirection;
   private boolean running = false;
   private Timer timer;
   private Timer badAppleTimer;
@@ -47,8 +48,9 @@ public class GameLogic {
 
   public GameLogic(GameFrame gameFrame) {
     this.gameFrame = gameFrame;
+    this.lastPressedDirection = 'R';
     random = new Random();
-    soundMap = new HashMap<>();
+    soundMap = new ConcurrentHashMap<>();
     soundMap.put("gameStart", new SoundManager("sounds/game-start.wav"));
     soundMap.put("gameOver", new SoundManager("sounds/game-over.wav"));
     soundMap.put("apple", new SoundManager("sounds/apple.wav"));
@@ -82,7 +84,8 @@ public class GameLogic {
         move();
         checkApples();
         checkCollisions();
-        int newDelay = Math.max(DELAY - score * DELAY_DECREMENT, MIN_DELAY);
+        int newDelay =
+            Math.max(DELAY - Math.min(score, 50) * DELAY_DECREMENT, MIN_DELAY);
         timer.setDelay(newDelay);
         gameFrame.repaint();
       }
@@ -110,7 +113,27 @@ public class GameLogic {
     pinkAppleTimer.start();
   }
 
+  public void setLastPressedDirection(char direction) {
+    this.lastPressedDirection = direction;
+  }
+
+  private void updateDirection() {
+    if (isValidDirectionChange(direction, lastPressedDirection)) {
+      direction = lastPressedDirection;
+    }
+  }
+
+  private boolean isValidDirectionChange(char currentDirection,
+                                         char newDirection) {
+    return (currentDirection == 'L' || currentDirection == 'R') &&
+        (newDirection == 'U' || newDirection == 'D') ||
+        (currentDirection == 'U' || currentDirection == 'D') &&
+            (newDirection == 'L' || newDirection == 'R');
+  }
+
   private void move() {
+    updateDirection();
+
     for (int i = bodyParts; i > 0; i--) {
       X[i] = X[i - 1];
       Y[i] = Y[i - 1];
@@ -221,7 +244,7 @@ public class GameLogic {
   }
 
   public void checkCollisions() {
-    for (int i = bodyParts; i > 0; i--) {
+    for (int i = 1; i < bodyParts; i++) {
       if (X[0] == X[i] && Y[0] == Y[i]) {
         running = false;
         break;
@@ -229,8 +252,11 @@ public class GameLogic {
     }
     if (!running) {
       timer.stop();
+      badApple = null;
       badAppleTimer.stop();
+      goldenApple = null;
       goldenAppleTimer.stop();
+      pinkApple = null;
       pinkAppleTimer.stop();
       playSound("gameOver");
       updateStatistics();

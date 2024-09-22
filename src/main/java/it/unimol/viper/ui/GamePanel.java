@@ -20,7 +20,7 @@ public class GamePanel extends JPanel {
     setDoubleBuffered(true);
     setFocusable(true);
 
-    addKeyListener(new MyKeyAdapter());
+    addKeyListener(new ViperKeyAdapter());
   }
 
   @Override
@@ -83,29 +83,21 @@ public class GamePanel extends JPanel {
     }
   }
 
-  private class MyKeyAdapter extends KeyAdapter {
+  private class ViperKeyAdapter extends KeyAdapter {
     @Override
     public void keyPressed(KeyEvent e) {
       switch (e.getKeyCode()) {
       case KeyEvent.VK_A:
-        if (gameLogic.getDirection() != 'R') {
-          gameLogic.setDirection('L');
-        }
+        gameLogic.setLastPressedDirection('L');
         break;
       case KeyEvent.VK_D:
-        if (gameLogic.getDirection() != 'L') {
-          gameLogic.setDirection('R');
-        }
+        gameLogic.setLastPressedDirection('R');
         break;
       case KeyEvent.VK_W:
-        if (gameLogic.getDirection() != 'D') {
-          gameLogic.setDirection('U');
-        }
+        gameLogic.setLastPressedDirection('U');
         break;
       case KeyEvent.VK_S:
-        if (gameLogic.getDirection() != 'U') {
-          gameLogic.setDirection('D');
-        }
+        gameLogic.setLastPressedDirection('D');
         break;
       }
     }

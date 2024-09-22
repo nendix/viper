@@ -51,4 +51,5 @@ public class GameFrame extends JFrame {
     cardLayout.show(mainPanel, "MenuPanel");
     menuPanel.requestFocusInWindow();
   }
+  public GamePanel getGamePanel() { return gamePanel; }
 }
