@@ -16,8 +16,6 @@ public class SoundManager {
                                         soundFilePath);
       }
 
-      // Convert the InputStream to a BufferedInputStream to handle audio
-      // loading
       InputStream bufferedIn = new BufferedInputStream(audioSrc);
       AudioInputStream audioInputStream =
           AudioSystem.getAudioInputStream(bufferedIn);
@@ -34,26 +32,26 @@ public class SoundManager {
   public void play() {
     if (clip != null) {
       new Thread(() -> {
-        stop();                   // Stop the sound if it's already playing
-        clip.setFramePosition(0); // Rewind to the beginning
-        clip.start();             // Start playing
-      }).start();                 // Run playback in a new thread
+        stop();
+        clip.setFramePosition(0);
+        clip.start();
+      }).start();
     }
   }
 
   public void loop() {
     if (clip != null) {
       new Thread(() -> {
-        stop();                   // Stop the sound if it's already playing
-        clip.setFramePosition(0); // Rewind to the beginning
-        clip.loop(Clip.LOOP_CONTINUOUSLY); // Loop the sound continuously
-      }).start();                          // Run looping in a new thread
+        stop();
+        clip.setFramePosition(0);
+        clip.loop(Clip.LOOP_CONTINUOUSLY);
+      }).start();
     }
   }
 
   public void stop() {
     if (clip != null && clip.isRunning()) {
-      clip.stop(); // Stop the sound if it's playing
+      clip.stop();
     }
   }
 }
