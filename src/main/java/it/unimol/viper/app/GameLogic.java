@@ -5,20 +5,24 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.*;
 
+/**
+ * GameLogic
+ */
 public class GameLogic {
-  private ConcurrentHashMap<String, SoundManager> soundMap;
   public static final int SCREEN_WIDTH = 1000;
   public static final int SCREEN_HEIGHT = 800;
-  public static final int UNIT_SIZE = 25;
+
+  public static final int UNIT_SIZE = 35;
   private static final int GAME_UNITS =
       (SCREEN_WIDTH * SCREEN_HEIGHT) / (UNIT_SIZE * UNIT_SIZE);
   public static final int DELAY = 150;
-  static final int DELAY_DECREMENT = 5;
-  static final int MIN_DELAY = 30;
+  static final int DELAY_DECREMENT = 2;
+  static final int MIN_DELAY = 50;
+  private ConcurrentHashMap<String, SoundManager> soundMap;
 
   public int[] X = new int[GAME_UNITS];
   public int[] Y = new int[GAME_UNITS];
-  private int bodyParts;
+  private int length;
   private int score;
   private char direction = 'R';
   private char lastPressedDirection;
@@ -64,12 +68,10 @@ public class GameLogic {
     }
   }
 
-  private void playSound(String sound) { soundMap.get(sound).play(); }
-
   public void startGame() {
     running = true;
     playSound("gameStart");
-    bodyParts = 3;
+    length = 1;
     score = 0;
     applesEaten = 0;
     badApplesEaten = 0;
@@ -78,6 +80,73 @@ public class GameLogic {
     startTimers();
   }
 
+  public void setLastPressedDirection(char direction) {
+    this.lastPressedDirection = direction;
+  }
+
+  public void newApple() { apple = generateApple(Apple.AppleType.NORMAL); }
+
+  public void checkApples() {
+    checkApple(apple, Apple.AppleType.NORMAL);
+    checkApple(badApple, Apple.AppleType.BAD);
+    checkApple(goldenApple, Apple.AppleType.GOLDEN);
+    checkApple(pinkApple, Apple.AppleType.PINK);
+  }
+
+  public void checkCollisions() {
+    for (int i = 1; i < length; i++) {
+      if (X[0] == X[i] && Y[0] == Y[i]) {
+        running = false;
+        break;
+      }
+    }
+    if (!running) {
+      timer.stop();
+      badApple = null;
+      badAppleTimer.stop();
+      goldenApple = null;
+      goldenAppleTimer.stop();
+      pinkApple = null;
+      pinkAppleTimer.stop();
+      playSound("gameOver");
+      updateStatistics();
+      gameFrame.showGameOverPanel();
+    }
+  }
+
+  public boolean isRunning() { return running; }
+  public int getLength() { return length; }
+
+  public int getScore() { return score; }
+
+  public int getHighScore() { return highScore; }
+
+  public int getTotalGamesPlayed() { return totalGamesPlayed; }
+
+  public int getTotalApplesEaten() { return totalApplesEaten; }
+
+  public int getTotalBadApplesEaten() { return totalBadApplesEaten; }
+
+  public int getTotalGoldenApplesEaten() { return totalGoldenApplesEaten; }
+
+  public int getApplesEaten() { return applesEaten; }
+
+  public int getBadApplesEaten() { return badApplesEaten; }
+
+  public int getGoldenApplesEaten() { return goldenApplesEaten; }
+
+  public int getSnakeX() { return X[0]; }
+
+  public int getSnakeY() { return Y[0]; }
+
+  public void setDirection(char direction) { this.direction = direction; }
+  public char getDirection() { return direction; }
+  public Apple getApple() { return apple; }
+  public Apple getBadApple() { return badApple; }
+  public Apple getGoldenApple() { return goldenApple; }
+  public Apple getPinkApple() { return pinkApple; }
+
+  private void playSound(String sound) { soundMap.get(sound).play(); }
   private void startTimers() {
     timer = new Timer(DELAY, e -> {
       if (running) {
@@ -85,7 +154,7 @@ public class GameLogic {
         checkApples();
         checkCollisions();
         int newDelay =
-            Math.max(DELAY - Math.min(score, 50) * DELAY_DECREMENT, MIN_DELAY);
+            Math.max(DELAY - Math.min(length, 50) * DELAY_DECREMENT, MIN_DELAY);
         timer.setDelay(newDelay);
         gameFrame.repaint();
       }
@@ -112,11 +181,6 @@ public class GameLogic {
     });
     pinkAppleTimer.start();
   }
-
-  public void setLastPressedDirection(char direction) {
-    this.lastPressedDirection = direction;
-  }
-
   private void updateDirection() {
     if (isValidDirectionChange(direction, lastPressedDirection)) {
       direction = lastPressedDirection;
@@ -130,11 +194,10 @@ public class GameLogic {
         (currentDirection == 'U' || currentDirection == 'D') &&
             (newDirection == 'L' || newDirection == 'R');
   }
-
   private void move() {
     updateDirection();
 
-    for (int i = bodyParts; i > 0; i--) {
+    for (int i = length; i > 0; i--) {
       X[i] = X[i - 1];
       Y[i] = Y[i - 1];
     }
@@ -175,9 +238,8 @@ public class GameLogic {
     } while (!isValidPosition(x, y));
     return new Apple(x, y, type);
   }
-
   private boolean isValidPosition(int x, int y) {
-    for (int i = 0; i < bodyParts; i++) {
+    for (int i = 0; i < length; i++) {
       if (X[i] == x && Y[i] == y) {
         return false;
       }
@@ -185,28 +247,18 @@ public class GameLogic {
     return true;
   }
 
-  public void newApple() { apple = generateApple(Apple.AppleType.NORMAL); }
-
-  public void checkApples() {
-    checkApple(apple, Apple.AppleType.NORMAL);
-    checkApple(badApple, Apple.AppleType.BAD);
-    checkApple(goldenApple, Apple.AppleType.GOLDEN);
-    checkApple(pinkApple, Apple.AppleType.PINK);
-  }
-
   private void checkApple(Apple a, Apple.AppleType type) {
     if (a != null && a.getX() == X[0] && a.getY() == Y[0]) {
       eatApple(type);
     }
   }
-
   private void eatApple(Apple.AppleType type) {
     switch (type) {
     case NORMAL:
       playSound("apple");
       score++;
       applesEaten++;
-      bodyParts++;
+      length++;
       apple = null;
       newApple();
       break;
@@ -214,15 +266,15 @@ public class GameLogic {
       playSound("badApple");
       score -= 3;
       badApplesEaten++;
-      bodyParts++;
+      length++;
       badApple = null;
       break;
     case GOLDEN:
       playSound("goldenApple");
       score += 3;
       goldenApplesEaten++;
-      if (bodyParts > 2)
-        bodyParts -= 2;
+      if (length > 2)
+        length -= 2;
       goldenApple = null;
       break;
     case PINK:
@@ -242,28 +294,6 @@ public class GameLogic {
       break;
     }
   }
-
-  public void checkCollisions() {
-    for (int i = 1; i < bodyParts; i++) {
-      if (X[0] == X[i] && Y[0] == Y[i]) {
-        running = false;
-        break;
-      }
-    }
-    if (!running) {
-      timer.stop();
-      badApple = null;
-      badAppleTimer.stop();
-      goldenApple = null;
-      goldenAppleTimer.stop();
-      pinkApple = null;
-      pinkAppleTimer.stop();
-      playSound("gameOver");
-      updateStatistics();
-      gameFrame.showGameOverPanel();
-    }
-  }
-
   private void updateStatistics() {
     totalGamesPlayed++;
     totalApplesEaten += applesEaten;
@@ -273,34 +303,7 @@ public class GameLogic {
       highScore = score;
     }
   }
-
   private int getRandomInterval(int min, int max) {
     return random.nextInt(max - min) + min;
   }
-
-  public boolean isRunning() { return running; }
-
-  public int getLength() { return bodyParts; }
-
-  public int getScore() { return score; }
-  public int getHighScore() { return highScore; }
-  public int getTotalGamesPlayed() { return totalGamesPlayed; }
-  public int getTotalApplesEaten() { return totalApplesEaten; }
-  public int getTotalBadApplesEaten() { return totalBadApplesEaten; }
-  public int getTotalGoldenApplesEaten() { return totalGoldenApplesEaten; }
-
-  public int getApplesEaten() { return applesEaten; }
-  public int getBadApplesEaten() { return badApplesEaten; }
-  public int getGoldenApplesEaten() { return goldenApplesEaten; }
-
-  public int getSnakeX() { return X[0]; }
-  public int getSnakeY() { return Y[0]; }
-
-  public void setDirection(char direction) { this.direction = direction; }
-  public char getDirection() { return direction; }
-
-  public Apple getApple() { return apple; }
-  public Apple getBadApple() { return badApple; }
-  public Apple getGoldenApple() { return goldenApple; }
-  public Apple getPinkApple() { return pinkApple; }
 }
